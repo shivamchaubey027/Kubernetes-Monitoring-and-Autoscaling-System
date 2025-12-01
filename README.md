@@ -294,6 +294,10 @@ watcherbot_requests_total
 - **kubectl logs is your friend**: Most issues were configuration mistakes caught in logs
 - **Terraform plan is free**: Always run it before apply
 
+## Some Images of the execution
+![Prometheus Targets](./architecture-diagrams/Prometheus-targets.png)
+![Grafana Dashboard](./architecture-diagrams/grafana-dashboard-sample.png)
+
 ## Next Steps (Phases 3-6)
 
 ### Phase 3: Custom Go Metrics Exporter
