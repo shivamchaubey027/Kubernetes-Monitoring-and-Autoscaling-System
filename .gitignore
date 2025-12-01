@@ -1,1 +1,4 @@
 infrastructure/k8s/secrets.yaml
+terraform/terraform.tfstate*
+terraform/.terraform/
+terraform/.terraform.lock.hcl
