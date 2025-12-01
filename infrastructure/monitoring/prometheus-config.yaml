@@ -1,0 +1,32 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: prometheus-server-conf
+  labels:
+    name: prometheus-server-conf
+  namespace: monitoring
+data:
+  prometheus.yml: |
+    global:
+      scrape_interval: 15s
+    scrape_configs:
+    - job_name: 'prometheus'
+      static_configs:
+        - targets: ['localhost:9090']
+    
+    - job_name: 'node-exporter'
+      kubernetes_sd_configs:
+        - role: endpoints
+          namespaces:
+            names:
+              - monitoring
+      relabel_configs:
+        - source_labels: [__meta_kubernetes_service_label_app] 
+          regex: node-exporter
+          action: keep
+    - job_name: 'kube-state-metrics'
+      static_configs:
+        - targets: ['ksm-service:8080']
+    - job_name: 'watcherBot'
+      static_configs:
+        - targets: ['watcherBot-svc:8080']
