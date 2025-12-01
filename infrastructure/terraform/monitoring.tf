@@ -363,3 +363,103 @@ resource "kubernetes_service" "grafana-svc" {
     type = "ClusterIP"
   }
 }
+
+
+resource "kubernetes_service_account" "ksm" {
+  metadata {
+    name = "ksm"
+    namespace = kubernetes_namespace.monitoring.metadata[0].name
+  }
+}
+
+resource "kubernetes_cluster_role" "ksm" {
+  metadata {
+    name = "ksm"
+  
+  }
+  rule {
+    api_groups = [""]
+    resources = [ "configmaps", "secrets" ]
+    verbs = [ "list", "watch" ]
+  }
+}
+
+resource "kubernetes_cluster_role_binding" "ksm" {
+  metadata {
+    name = "ksm-new"
+    
+  }
+  depends_on = [
+    kubernetes_namespace.monitoring
+  ]
+  role_ref {
+    api_group = "rbac.authorization.k8s.io"
+    kind = "ClusterRole"
+    name = "ksm"
+  }
+  subject {
+    kind = "ServiceAccount"
+    name = "ksm"
+    namespace = kubernetes_namespace.monitoring.metadata[0].name
+  }
+}
+
+resource "kubernetes_deployment" "ksm" {
+  metadata {
+    name = "ksm"
+    namespace = kubernetes_namespace.monitoring.metadata[0].name
+  }
+  spec {
+    replicas = 1
+    selector {
+      match_labels = {
+        app = "ksm"
+      }
+    }
+    template {
+      metadata {
+        labels = {
+          app= "ksm"
+        }
+      }
+      spec {
+        service_account_name = "ksm"
+        container {
+          
+          name = "ksm"
+          image = "registry.k8s.io/kube-state-metrics/kube-state-metrics:v2.9.2"
+          port {
+            container_port = 8080
+          }
+          resources {
+            requests = {
+              memory = "64Mi"
+              cpu="250m"
+            }
+            limits = {
+              memory= "128Mi"
+              cpu= "500m"
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+resource "kubernetes_service" "ksm-svc" {
+  metadata {
+    name = "ksm-svc"
+    namespace = kubernetes_namespace.monitoring.metadata[0].name
+  }
+  spec {
+    selector = {
+      app= "ksm"
+    }
+    port {
+      port = 8080
+      target_port = 8080
+    }
+  }
+}
+
