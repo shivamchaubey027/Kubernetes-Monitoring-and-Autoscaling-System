@@ -39,16 +39,16 @@ metadata:
 spec:
   selector:
     matchLabels:
-      app: watcher-bot
+      app: watcherBot
   template:
     metadata:
       labels:
-        app: watcher-bot
+        app: watcherBot
     spec:
       serviceAccountName: watcher-bot
       containers:
-      - name: watcher-bot
-        image: registry.k8s.io/kube-state-metrics/kube-state-metrics:v2.9.2
+      - name: watcherBot
+        image: shivamchaubey/watcherbot-exporter:latest
         resources:
           requests:
             memory: "64Mi"
@@ -57,7 +57,7 @@ spec:
             memory: "128Mi"
             cpu: "500m"
         ports:
-        - containerPort: 8080
+        - containerPort: 8088
 
 ---
 
@@ -68,9 +68,9 @@ metadata:
   namespace: monitoring
 spec:
   selector:
-    app: watcher-bot
+    app: watcherBot
   ports:
   - port: 8088
-    targetPort: 8080
+    targetPort: 8088
 
 

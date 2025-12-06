@@ -29,4 +29,4 @@ data:
         - targets: ['ksm-service:8080']
     - job_name: 'watcherBot'
       static_configs:
-        - targets: ['watcherBot-svc:8080']
+        - targets: ['watcherBot-svc:8088']
