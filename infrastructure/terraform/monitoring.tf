@@ -77,7 +77,7 @@ resource "kubernetes_config_map" "prometheus_config" {
           - targets: ['ksm-service:8080']
       - job_name: 'watcherBot'
         static_configs:
-          - targets: ['watcherBot-svc:8080']
+          - targets: ['watcherBot-svc:8088']
     EOT
   }
 }
@@ -463,3 +463,78 @@ resource "kubernetes_service" "ksm-svc" {
   }
 }
 
+
+
+
+resource "kubernetes_deployment" "autoscaler-controller" {
+  metadata {
+    name = "autoscaler-controller"
+    namespace = kubernetes_namespace.monitoring.metadata[0].name
+    labels = {
+      app= "autoscaler-controller"
+    }
+  }
+  spec {
+    replicas = 1
+    selector {
+      match_labels= {
+        app = "autoscaler-controller"
+      
+      }
+    }
+    
+    template {
+      metadata {
+        labels = {
+          app = "autoscaler-controller"
+        }
+      }
+      spec {
+        service_account_name = kubernetes_service_account.autoscaler-sa.metadata[0].name
+        container {
+          name="autoscaler-controller"
+          image ="shivamchaubey/autoscaler-controller:v1.1"
+        }
+      }
+
+    }
+  }
+}
+
+
+resource "kubernetes_service_account" "autoscaler-sa" {
+  metadata {
+    name      = "autoscaler-sa"
+    namespace = kubernetes_namespace.monitoring.metadata[0].name
+  }
+  
+}
+
+resource "kubernetes_cluster_role" "autoscaler-sa" {
+  metadata {
+    name = "autoscaler-role"
+  }
+  rule {
+    api_groups = ["apps"]
+    resources  = ["deployments"]
+    verbs      = ["get", "update", "patch"]
+
+  }
+}
+
+resource "kubernetes_cluster_role_binding" "autoscaler-sa" {
+  metadata {
+    name = "autoscaler-binding"
+  }
+  
+  role_ref {
+    api_group = "rbac.authorization.k8s.io"
+    kind      = "ClusterRole"
+    name      = kubernetes_cluster_role.autoscaler-sa.metadata[0].name
+  }
+  subject {
+    kind      = "ServiceAccount"
+    name      = kubernetes_service_account.autoscaler-sa.metadata[0].name
+    namespace = kubernetes_namespace.monitoring.metadata[0].name
+  }
+}
