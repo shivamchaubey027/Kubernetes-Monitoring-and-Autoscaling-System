@@ -18,7 +18,7 @@ The entire infrastructure is managed as code using **Terraform**, making it repr
 
 ## Architecture
 
-![Infra Architecture Flowchart](./images/Initial-infra.png)
+![Infra Architecture Flowchart](./images/k8s.png)
 
 **Components**:
 - **Prometheus**: Time-series database scraping metrics every 15s
